@@ -31,9 +31,33 @@
 
     </model-viewer>
 
-    <button class="btn-pedir" onclick="alert('Conectando con Airtable...')">
+    <button class="btn-pedir" onclick="enviarPedido()">
         PEDIR AHORA
     </button>
 
 </body>
 </html>
+<script>
+    function enviarPedido() {
+        const urlWebhook = "PEGA_AQUÍ_TU_URL_DE_MAKE";
+        
+        const datosPedido = {
+            plato: "Hamburguesa Demo", // Aquí pondrás el nombre del plato
+            mesa: "Mesa VIP 01",
+            notas: "Sin cebolla, extra queso"
+        };
+
+        fetch(urlWebhook, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosPedido)
+        })
+        .then(response => {
+            alert("✅ ¡Pedido recibido en cocina!");
+        })
+        .catch(error => {
+            alert("❌ Error al enviar pedido");
+            console.error(error);
+        });
+    }
+</script>
