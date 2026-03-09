@@ -2,16 +2,54 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Menú AR - Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú 3D Interactivo</title>
     <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js"></script>
     <style>
-        body { margin: 0; font-family: Arial, sans-serif; }
-        model-viewer { width: 100%; height: 90vh; background-color: #f5f5f5; }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; }
+        
+        /* Contenedor del modelo */
+        model-viewer {
+            width: 100%;
+            height: 85vh;
+            background-color: #ffffff;
+        }
+
+        /* Botón de Pedido */
         .btn-pedir {
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
-            padding: 15px 40px; background-color: #e67e22; color: white;
-            border: none; border-radius: 30px; font-size: 18px; font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 18px 50px;
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .btn-pedir:active { transform: translateX(-50%) scale(0.95); }
+        .btn-pedir:disabled { background: #95a5a6; }
+
+        /* Estilo del botón AR nativo de Google */
+        #ar-button {
+            background-color: white;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
     </style>
 </head>
@@ -25,39 +63,55 @@
         auto-rotate 
         shadow-intensity="1">
         
-        <button slot="ar-button" style="background-color: white; border-radius: 8px; border: none; position: absolute; top: 20px; right: 20px; padding: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-            👋 Ver en mi mesa
+        <button slot="ar-button" id="ar-button">
+            📸 VER EN MI MESA
         </button>
-
     </model-viewer>
 
-    <button class="btn-pedir" onclick="enviarPedido()">
+    <button id="botonPedido" class="btn-pedir" onclick="enviarPedido()">
         PEDIR AHORA
     </button>
 
+    <script>
+        async function enviarPedido() {
+            const btn = document.getElementById('botonPedido');
+            
+            // --- PEGA TU URL DE MAKE AQUÍ ABAJO ---
+            const urlWebhook = "TU_URL_DE_WEBHOOK_AQUI"; 
+            // ---------------------------------------
+
+            // Desactivamos el botón visualmente
+            btn.disabled = true;
+            btn.innerText = "ENVIANDO...";
+
+            // Datos que viajarán a Airtable
+            const datosParaAirtable = {
+                plato: "Hamburguesa Gourmet AR",
+                mesa: "Mesa Terraza 05",
+                notas: "Cliente pidió desde menú 3D interactivo"
+            };
+
+            try {
+                const response = await fetch(urlWebhook, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datosParaAirtable)
+                });
+
+                if (response.ok) {
+                    alert("✅ ¡Éxito! Tu pedido ya está en la interface de cocina.");
+                    btn.innerText = "¡PEDIDO ENVIADO!";
+                    btn.style.background = "#27ae60";
+                } else {
+                    throw new Error("Error en el servidor");
+                }
+            } catch (error) {
+                alert("❌ Error: No se pudo conectar con el sistema. Revisa tu internet.");
+                btn.disabled = false;
+                btn.innerText = "REINTENTAR PEDIDO";
+                console.error(error);
+            }
+        }
+    </script>
 </body>
 </html>
-<script>
-    function enviarPedido() {
-        const urlWebhook = "PEGA_AQUÍ_TU_URL_DE_MAKE";
-        
-        const datosPedido = {
-            plato: "Hamburguesa Demo", // Aquí pondrás el nombre del plato
-            mesa: "Mesa VIP 01",
-            notas: "Sin cebolla, extra queso"
-        };
-
-        fetch(urlWebhook, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datosPedido)
-        })
-        .then(response => {
-            alert("✅ ¡Pedido recibido en cocina!");
-        })
-        .catch(error => {
-            alert("❌ Error al enviar pedido");
-            console.error(error);
-        });
-    }
-</script>
